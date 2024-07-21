@@ -1,0 +1,56 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Image Upload</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>MNIST Digit Classification</h1>
+        <form id="uploadForm" class="upload-form">
+            <input type="file" id="imageInput" name="image" accept="image/*" required>
+            <button type="submit">Upload Image</button>
+        </form>
+        <div id="prediction" class="prediction"></div>
+        <div class="image-container">
+            <div class="image-wrapper">
+                <h2>Original Image</h2>
+                <img id="originalImage" src="" alt="Original Image">
+            </div>
+            <div class="image-wrapper">
+                <h2>Processed Image</h2>
+                <img id="processedImage" src="" alt="Processed Image">
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData();
+            const imageFile = document.getElementById('imageInput').files[0];
+            formData.append('image', imageFile);
+
+            const response = await fetch('/api/upload/', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+            
+            if (result.predicted_digit !== undefined) {
+                document.getElementById('prediction').textContent = `Predicted digit: ${result.predicted_digit}`;
+                document.getElementById('originalImage').src = result.original_image;
+                document.getElementById('processedImage').src = result.processed_image;
+            } else {
+                document.getElementById('prediction').textContent = 'Error: ' + result.error;
+                document.getElementById('originalImage').src = '';
+                document.getElementById('processedImage').src = '';
+            }
+        });
+    </script>
+</body>
+</html>
